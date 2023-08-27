@@ -18,6 +18,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Clone the Laravel app from GitHub
 RUN git clone https://github.com/mesoylu/news-backend.git .
 
+# Create .env file
+COPY ./.env.example ./.env
+
 # Set permissions
 RUN chown -R www-data:www-data .
 
