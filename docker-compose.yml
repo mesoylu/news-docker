@@ -1,0 +1,51 @@
+version: '3'
+services:
+  db:
+    image: mysql
+    container_name: news-db
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+
+  api:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile-backend
+    container_name: news-backend
+    volumes:
+      - backend:/var/www/news-backend
+    depends_on:
+      - db
+
+  react-app:
+    build:
+      context: .
+      dockerfile: .docker/Dockerfile-frontend
+    container_name: react-app
+    volumes:
+      - frontend:/var/www/news-frontend
+    depends_on:
+      - api
+
+  webserver:
+      image: httpd:2.4
+      container_name: laravel-webserver
+      ports:
+          - "6070:6070"
+          - "6071:6071"
+      volumes:
+          - .docker/httpd.conf:/usr/local/apache2/conf/httpd.conf
+          - .docker/httpd-vhosts.conf:/usr/local/apache2/conf/extra/httpd-vhosts.conf
+          - backend:/var/www/news-backend
+          - frontend:/var/www/news-frontend
+      depends_on:
+          - api
+          - react-app
+
+volumes:
+  backend:
+  frontend:
