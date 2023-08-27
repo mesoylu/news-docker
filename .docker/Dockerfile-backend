@@ -8,6 +8,7 @@ WORKDIR /var/www/news-backend
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
+    supervisor \
     libzip-dev \
     && docker-php-ext-install zip pdo pdo_mysql
 
@@ -20,9 +21,6 @@ RUN git clone https://github.com/mesoylu/news-backend.git .
 # Set permissions
 RUN chown -R www-data:www-data .
 
-# Create .env file
-COPY .env.example .env
-
 # Install application dependencies and initiate laravel app
 RUN composer install --optimize-autoloader --no-dev; \
     php artisan key:generate --force;
@@ -31,4 +29,4 @@ RUN composer install --optimize-autoloader --no-dev; \
 EXPOSE 9000
 
 # Start PHP-FPM
-CMD ["php-fpm"]
+CMD php-fpm && supervisord -c /etc/supervisor/supervisord.conf

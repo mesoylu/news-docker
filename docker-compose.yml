@@ -2,7 +2,7 @@ version: '3'
 services:
   db:
     image: mysql
-    container_name: news-db
+    container_name: db
     ports:
       - "3306:3306"
     environment:
@@ -10,13 +10,16 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
 
   api:
     build:
       context: .
       dockerfile: .docker/Dockerfile-backend
-    container_name: news-backend
+    container_name: backend
     volumes:
+      - .docker/supervisor.conf:/etc/supervisor/supervisord.conf
       - backend:/var/www/news-backend
     depends_on:
       - db
@@ -25,7 +28,7 @@ services:
     build:
       context: .
       dockerfile: .docker/Dockerfile-frontend
-    container_name: react-app
+    container_name: frontend
     volumes:
       - frontend:/var/www/news-frontend
     depends_on:
@@ -33,7 +36,7 @@ services:
 
   webserver:
       image: httpd:2.4
-      container_name: laravel-webserver
+      container_name: webserver
       ports:
           - "6070:6070"
           - "6071:6071"
@@ -49,3 +52,4 @@ services:
 volumes:
   backend:
   frontend:
+  db:
