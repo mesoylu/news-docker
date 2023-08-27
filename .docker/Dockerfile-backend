@@ -1,0 +1,34 @@
+# Use the official PHP image as base
+FROM php:8.2-fpm
+
+# Set the working directory in the container
+WORKDIR /var/www/news-backend
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libzip-dev \
+    && docker-php-ext-install zip pdo pdo_mysql
+
+# Install Composer globally
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Clone the Laravel app from GitHub
+RUN git clone https://github.com/mesoylu/news-backend.git .
+
+# Set permissions
+RUN chown -R www-data:www-data .
+
+# Create .env file
+COPY .env.example .env
+
+# Install application dependencies and initiate laravel app
+RUN composer install --optimize-autoloader --no-dev; \
+    php artisan key:generate --force;
+
+# Expose port 9000 for PHP-FPM
+EXPOSE 9000
+
+# Start PHP-FPM
+CMD ["php-fpm"]
